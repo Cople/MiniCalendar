@@ -67,7 +67,7 @@
                     <!-- ICS源列表 -->
                     <DataGrid x:Name="IcsSourcesGrid" 
                               Grid.Row="0"
-                              Height="250"
+                              Height="220"
                               AutoGenerateColumns="False" 
                               CanUserAddRows="False"
                               HeadersVisibility="Column"

@@ -1,6 +1,8 @@
 # Mini Calendar - 托盘日历应用
 
-一个基于 .NET 10 和 WPF 的 Windows 托盘日历应用程序，支持订阅 ICS 日历。
+一个基于 .NET 10 和 WPF 的 Windows 托盘日历应用程序，支持显示中国节假日调休和订阅 ICS 日历。
+
+![截图](./screenshot.png)
 
 ## 功能特性
 
