@@ -206,7 +206,7 @@ public partial class CalendarControl : UserControl
         rowCount = (int)Math.Ceiling(days.Count / 7.0);
         for (int i = 0; i < rowCount; i++)
         {
-            CalendarGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto, MinHeight = 50 }); // 设置最小高度
+            CalendarGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto, MinHeight = 48 }); // 设置最小高度
         }
 
         // 填充网格
@@ -226,13 +226,12 @@ public partial class CalendarControl : UserControl
         {
             Style = (Style)FindResource("CalendarDayButtonStyle"),
             Tag = date,
-            Cursor = Cursors.Hand,
+            Cursor = Cursors.Arrow,
             VerticalAlignment = VerticalAlignment.Stretch // 确保填满单元格
         };
 
-        // 使用 Grid 作为容器，以便支持右上角的角标
         var grid = new Grid();
-
+        
         var stackPanel = new StackPanel();
         
         var dayText = new TextBlock
@@ -240,39 +239,14 @@ public partial class CalendarControl : UserControl
             Text = date.Day.ToString(),
             HorizontalAlignment = HorizontalAlignment.Center,
             FontWeight = date.Date == DateTime.Today ? FontWeights.Bold : FontWeights.Normal,
-            Foreground = isOtherMonth ? new SolidColorBrush(Color.FromRgb(150, 150, 150)) : (date.Date == DateTime.Today ? Brushes.White : MonthYearText.Foreground),
-            Background = date.Date == DateTime.Today ? new SolidColorBrush(Colors.LightBlue) { Opacity = 0.8 } : Brushes.Transparent,
-            Padding = new Thickness(6, 2, 6, 2)
+            Foreground = isOtherMonth ? new SolidColorBrush(Color.FromRgb(150, 150, 150)) : MonthYearText.Foreground,
+            Background = Brushes.Transparent,
+            Padding = new Thickness(6, 2, 6, 2),
+            Height = 18, // 固定高度以对齐
+            Margin = new Thickness(0, 6, 0, 0)
         };
         
-        // 圆角背景
-        if (date.Date == DateTime.Today)
-        {
-            var border = new Border
-            {
-                Background = new SolidColorBrush(Color.FromRgb(0, 120, 212)),
-                // CornerRadius = new CornerRadius(10), // 移除圆角
-                Child = new TextBlock
-                {
-                    Text = date.Day.ToString(),
-                    Foreground = Brushes.White,
-                    FontWeight = FontWeights.Bold, // 当前日期改为粗体
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Padding = new Thickness(6, 1, 6, 1), // 调整 Padding 保持高度一致
-                    Height = 18 // 固定高度以对齐
-                },
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 2, 0, 2)
-            };
-            stackPanel.Children.Add(border);
-        }
-        else
-        {
-            dayText.Height = 18; // 固定高度以对齐
-            dayText.Margin = new Thickness(0, 2, 0, 2);
-            stackPanel.Children.Add(dayText);
-        }
+        stackPanel.Children.Add(dayText);
 
         // 添加事件列表显示
         var dayEvents = GetEventsForDate(date);
@@ -295,7 +269,6 @@ public partial class CalendarControl : UserControl
                     Padding = new Thickness(2, 1, 2, 1),
                     Margin = new Thickness(0, 1, 0, 0),
                     TextTrimming = TextTrimming.CharacterEllipsis,
-                    // ToolTip = $"{calendarEvent.StartTime:HH:mm} - {calendarEvent.Title}\n{calendarEvent.Description}", // ToolTip 移到 Border 上
                     VerticalAlignment = VerticalAlignment.Center
                 };
 
@@ -330,15 +303,32 @@ public partial class CalendarControl : UserControl
             var indicator = new TextBlock 
             { 
                 Text = holidayInfo.Type == HolidayType.Holiday ? "休" : "班",
-                Foreground = holidayInfo.Type == HolidayType.Holiday ? new SolidColorBrush(Color.FromRgb(46, 204, 113)) : new SolidColorBrush(Color.FromRgb(231, 76, 60)), // 绿色 / 红色
+                Foreground = holidayInfo.Type == HolidayType.Holiday ? new SolidColorBrush(Color.FromRgb(46, 204, 113)) : new SolidColorBrush(Color.FromRgb(231, 76, 60)),
                 FontSize = 9,
                 FontWeight = FontWeights.Bold,
                 HorizontalAlignment = HorizontalAlignment.Right,
                 VerticalAlignment = VerticalAlignment.Top,
                 Margin = new Thickness(0, 1, 1, 0),
-                ToolTip = holidayInfo.Description // 添加 ToolTip
+                ToolTip = holidayInfo.Description
             };
             grid.Children.Add(indicator);
+        }
+
+        // 最后添加边框
+        if (date.Date == DateTime.Today)
+        {
+            var border = new Border
+            {
+                BorderBrush = new SolidColorBrush(Color.FromRgb(0, 120, 212)),
+                BorderThickness = new Thickness(2),
+                Background = Brushes.Transparent,
+                IsHitTestVisible = false, // 不拦截点击事件
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch,
+                SnapsToDevicePixels = true,
+                UseLayoutRounding = true
+            };
+            grid.Children.Add(border);
         }
 
         button.Content = grid;
@@ -349,10 +339,6 @@ public partial class CalendarControl : UserControl
         Grid.SetColumn(button, col);
         CalendarGrid.Children.Add(button);
     }
-
-    // private class TextPart ... (removed)
-    // private List<TextPart> SplitEmoji ... (removed)
-    // private bool IsStringEmoji ... (removed)
 
     private List<CalendarEvent> GetEventsForDate(DateTime date)
     {
@@ -415,7 +401,6 @@ public partial class CalendarControl : UserControl
                     {
                         Header = calendarEvent.IsAllDay ? $"全天 - {calendarEvent.Title}" : $"{calendarEvent.StartTime:HH:mm} - {calendarEvent.Title}",
                         Tag = calendarEvent
-                        // Background = (Brush)new BrushConverter().ConvertFromString(calendarEvent.Color) ?? Brushes.Blue // 移除自定义背景色
                     };
                     menuItem.Click += (s, args) =>
                     {

@@ -104,13 +104,6 @@ public class IcsService
                 }
             }
         }
-        else if (triggerType == "Timer")
-        {
-             // 定时器触发时，通常意味着时间到了。但为了防止 Timer 刚刚启动就触发（虽然设置了 Interval），
-             // 或者系统休眠唤醒导致的一堆 Timer 触发，也可以检查一下。
-             // 不过 Timer 的逻辑在 MainWindow 里控制，这里主要负责执行。
-             // 暂不强制检查，除非为了防抖。
-        }
 
         try
         {

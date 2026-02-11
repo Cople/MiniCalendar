@@ -7,7 +7,9 @@
              xmlns:emoji="clr-namespace:Emoji.Wpf;assembly=Emoji.Wpf"
              mc:Ignorable="d" 
              d:DesignHeight="420" d:DesignWidth="300"
-             x:Name="CalendarUserControl">
+             x:Name="CalendarUserControl"
+             UseLayoutRounding="True"
+             SnapsToDevicePixels="True">
     <UserControl.Resources>
         <Geometry x:Key="PrevMonthArrow">M 8,0 L 0,8 L 8,16</Geometry>
         <Geometry x:Key="NextMonthArrow">M 0,0 L 8,8 L 0,16</Geometry>
@@ -56,7 +58,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="0" Padding="{TemplateBinding Padding}">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="0" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                         </Border>
                         <ControlTemplate.Triggers>

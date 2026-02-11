@@ -71,6 +71,9 @@ MiniCalendar/
 2. 使用 Visual Studio 打开 `MiniCalendar.csproj`
 3. 还原 NuGet 包
 4. 编译并运行项目
+```bash
+dotnet run
+```
 
 ### 发布
 ```bash

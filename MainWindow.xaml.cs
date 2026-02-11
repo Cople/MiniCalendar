@@ -200,32 +200,6 @@ public partial class MainWindow : Window
         timer.Elapsed += async (s, e) => 
         {
             await LoadHolidayDataAsync("Timer");
-            // LoadHolidayDataAsync 内部会再次调用 SetupHolidayTimer (递归)
-            // 只要我们确保 LoadHolidayDataAsync 里每次都更新 LastUpdated (如果走了网络)
-            // 如果走了缓存，LastUpdated 没变，会导致死循环立即触发？
-            // IcsService.LoadEventsFromIcsAsync:
-            //   - 网络成功: 更新 LastUpdated
-            //   - 网络跳过: 不更新 LastUpdated
-            //   - 失败: 不更新 LastUpdated
-            
-            // 如果网络跳过（因为时间没到），那 LastUpdated 还是旧的。
-            // 但 SetupHolidayTimer 是根据 LastUpdated + Interval 计算的。
-            // 如果 LastUpdated 是旧的，NextRefreshTime 也是旧的（过去的时间），initialDelay 会是 1000ms。
-            // 于是 1秒后又触发，又跳过，又触发... 死循环。
-            
-            // 修正：只有当 LoadEventsFromIcsAsync 真正执行了刷新（并更新了 LastUpdated）或者我们需要强制推迟下一次检查时。
-            // 如果 LoadEventsFromIcsAsync 跳过了网络请求，说明不需要刷新。
-            // 但为什么会跳过？
-            // 1. Startup: 检查 LastUpdated。
-            // 2. Timer: 我们在 LoadEventsFromIcsAsync 里没写 Timer 的跳过逻辑，只写了 Startup。
-            // 所以 Timer 触发时，LoadEventsFromIcsAsync 会强制尝试网络请求。
-            // 如果请求成功，LastUpdated 更新，下次 Timer 就会很久以后。
-            // 如果请求失败，LastUpdated 不变，下次 Timer 又是 1秒后（因为 nextRefreshTime 还是过去）。
-            // 这会导致失败时疯狂重试。
-            
-            // 我们需要在失败时也推迟。
-            // 或者，我们在 SetupHolidayTimer 里，如果发现 nextRefreshTime 已经是过去式了，
-            // 说明刚刚尝试刷新失败了（或者没更新时间），我们应该强制加一个延迟（比如 1小时后重试）。
         };
         timer.Start();
         _sourceTimers[_holidaySource.Id] = timer;
@@ -796,21 +770,6 @@ public partial class MainWindow : Window
         
         // 重新设置定时器
         SetupRefreshTimers();
-        // 关闭设置窗口时不重新拉取数据
-        // _ = LoadCalendarEventsAsync("SettingsChanged");
-        
-        // 仅刷新 UI（从内存/缓存中重新构建），因为启用/禁用状态可能变了
-        // 但 LoadCalendarEventsAsync 会触发 LoadAllEventsAsync -> LoadEventsFromIcsAsync -> 网络/缓存
-        // 如果只是想刷新显隐，应该有一个更轻量的方法，或者 LoadEventsFromIcsAsync 内部已经有缓存了，所以其实开销还好？
-        // 但用户明确要求“不要重新拉取数据”。
-        // 如果 LoadEventsFromIcsAsync 在缓存有效时不去联网，那就符合要求。
-        // 但目前的实现是：LoadEventsFromIcsAsync 会优先联网。
-        // 所以我们需要一个新的逻辑：只从缓存/内存加载，不联网。
-        
-        // 暂时先只刷新 UI，利用现有的事件数据（如果内存里有）
-        // 或者，我们可以假设用户在设置窗口里的操作（添加/编辑/删除/启用/禁用）都已经触发了必要的刷新。
-        // 添加/编辑/删除/启用/禁用 都在 SettingsWindow 里处理了。
-        // 我们来看看 SettingsWindow 里的逻辑。
     }
 
     public void RefreshSingleSource(Models.IcsSource source)

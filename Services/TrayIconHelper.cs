@@ -182,27 +182,9 @@ namespace MiniCalendar.Services
                 for (int i = 0; i < count; i++)
                 {
                     // Define TBBUTTON size
-                    int tbButtonSize = is64Bit ? 32 : 20; // Rough estimation: 64-bit (8+4+1+1+6+8+8=36? No, actually: 8(bitmap)+4(id)+1(state)+1(style)+6(align)+8(data)+8(string) = 36? Wait. 
-                    // Let's use Marshal.SizeOf if we had the struct defined, but we'll do manual offset calculation for safety across processes.
-                    // 64-bit TBBUTTON:
-                    // 0: iBitmap (4 bytes)
-                    // 4: idCommand (4 bytes)
-                    // 8: fsState (1 byte)
-                    // 9: fsStyle (1 byte)
-                    // 10: bReserved (6 bytes padding) -> 16
-                    // 16: dwData (8 bytes)
-                    // 24: iString (8 bytes)
-                    // Total: 32 bytes?
-                    
-                    // 32-bit TBBUTTON:
-                    // 0: iBitmap (4 bytes)
-                    // 4: idCommand (4 bytes)
-                    // 8: fsState (1 byte)
-                    // 9: fsStyle (1 byte)
-                    // 10: bReserved (2 bytes) -> 12
-                    // 12: dwData (4 bytes)
-                    // 16: iString (4 bytes)
-                    // Total: 20 bytes
+                    // 64-bit TBBUTTON: 32 bytes
+                    // 32-bit TBBUTTON: 20 bytes
+                    int tbButtonSize = is64Bit ? 32 : 20;
 
                     // We need to allocate memory in the remote process
                     IntPtr lpRemoteBuffer = VirtualAllocEx(hProcess, IntPtr.Zero, (uint)tbButtonSize, AllocationType.Commit, MemoryProtection.ReadWrite);
