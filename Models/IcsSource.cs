@@ -55,6 +55,7 @@ public class CalendarEvent
     public string SourceName { get; set; } = string.Empty;
     public string Color { get; set; } = "#0078D4";
     public bool IsAllDay { get; set; }
+    public string Url { get; set; } = string.Empty;
 }
 
 public class AppSettings

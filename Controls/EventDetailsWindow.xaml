@@ -4,7 +4,7 @@
         xmlns:controls="clr-namespace:MiniCalendar.Controls"
         xmlns:emoji="clr-namespace:Emoji.Wpf;assembly=Emoji.Wpf"
         Title="事件详情" 
-        Height="300" Width="400"
+        Height="350" Width="400"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
         WindowStyle="SingleBorderWindow"
@@ -41,20 +41,30 @@
             <StackPanel Grid.Row="1" Margin="0,0,0,15">
                 <!-- 时间 -->
                 <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <TextBlock Text="时间:" FontWeight="Bold" Width="50" Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                    <TextBlock Text="时间：" FontWeight="Bold" Width="42" Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
                     <TextBlock x:Name="TimeText" Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
                 </StackPanel>
                 
                 <!-- 地点 -->
                 <StackPanel x:Name="LocationPanel" Orientation="Horizontal" Margin="0,5">
-                    <TextBlock Text="地点:" FontWeight="Bold" Width="50" Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                    <TextBlock Text="地点：" FontWeight="Bold" Width="42" Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
                     <emoji:TextBlock x:Name="LocationText" TextWrapping="Wrap" MaxWidth="300" Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
                 </StackPanel>
                 
                 <!-- 来源 -->
                 <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <TextBlock Text="来源:" FontWeight="Bold" Width="50" Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                    <TextBlock Text="来源：" FontWeight="Bold" Width="42" Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
                     <TextBlock x:Name="SourceText" Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                </StackPanel>
+
+                <!-- 链接 -->
+                <StackPanel x:Name="UrlPanel" Orientation="Horizontal" Margin="0,5" Visibility="Collapsed">
+                    <TextBlock Text="链接：" FontWeight="Bold" Width="42" Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" VerticalAlignment="Top"/>
+                    <TextBlock MaxWidth="300" TextWrapping="Wrap">
+                        <Hyperlink x:Name="UrlLink" Click="UrlLink_Click">
+                             <Run x:Name="UrlRun"/>
+                        </Hyperlink>
+                    </TextBlock>
                 </StackPanel>
             </StackPanel>
             

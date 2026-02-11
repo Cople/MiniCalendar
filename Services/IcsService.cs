@@ -170,6 +170,18 @@ public class IcsService
                 var startTime = calendarEvent.Start.AsSystemLocal;
                 var endTime = calendarEvent.End?.AsSystemLocal ?? startTime.AddHours(1);
 
+                string eventUrl = calendarEvent.Url?.ToString() ?? string.Empty;
+
+                // 如果 URL 字段为空，尝试从描述中提取第一个 http(s) 链接
+                if (string.IsNullOrEmpty(eventUrl) && !string.IsNullOrEmpty(calendarEvent.Description))
+                {
+                    var match = System.Text.RegularExpressions.Regex.Match(calendarEvent.Description, @"https?://[^\s]+");
+                    if (match.Success)
+                    {
+                        eventUrl = match.Value;
+                    }
+                }
+
                 events.Add(new CalendarEvent
                 {
                     Id = calendarEvent.Uid ?? Guid.NewGuid().ToString(),
@@ -181,7 +193,8 @@ public class IcsService
                     SourceId = source.Id,
                     SourceName = source.Name,
                     Color = source.Color,
-                    IsAllDay = calendarEvent.IsAllDay
+                    IsAllDay = calendarEvent.IsAllDay,
+                    Url = eventUrl
                 });
             }
 
