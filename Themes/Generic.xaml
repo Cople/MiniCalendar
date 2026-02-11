@@ -1,0 +1,21 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- 统一控件高度样式 -->
+    <Style TargetType="TextBox">
+        <Setter Property="Height" Value="25"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    
+    <Style TargetType="ComboBox">
+        <Setter Property="Height" Value="25"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+
+    <!-- 统一按钮样式 -->
+    <Style TargetType="Button">
+        <Setter Property="Height" Value="25"/>
+        <Setter Property="Width" Value="75"/>
+    </Style>
+    
+</ResourceDictionary>
