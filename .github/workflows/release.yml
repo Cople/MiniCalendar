@@ -25,8 +25,16 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
 
+    - name: Get Version
+      id: get_version
+      shell: bash
+      run: |
+        VERSION=${GITHUB_REF#refs/tags/v}
+        echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
+        echo "Extracted version: $VERSION"
+
     - name: Publish
-      run: dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true --self-contained -o publish
+      run: dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:Version=${{ env.APP_VERSION }} --self-contained -o publish
 
     - name: Rename executable
       run: |
