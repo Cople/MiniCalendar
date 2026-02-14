@@ -308,7 +308,7 @@ public partial class CalendarControl : UserControl
                 FontWeight = FontWeights.Bold,
                 HorizontalAlignment = HorizontalAlignment.Right,
                 VerticalAlignment = VerticalAlignment.Top,
-                Margin = new Thickness(0, 1, 1, 0),
+                Margin = new Thickness(0, 2, 2, 0),
                 ToolTip = holidayInfo.Description
             };
             grid.Children.Add(indicator);
