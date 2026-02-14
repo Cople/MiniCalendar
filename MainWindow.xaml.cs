@@ -21,6 +21,28 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         
+        // 针对 Windows 11 (Build 22000+) 启用原生圆角
+        // 这需要关闭 AllowsTransparency，并让 DWM 处理圆角
+        if (Environment.OSVersion.Version.Major >= 10 && Environment.OSVersion.Version.Build >= 22000)
+        {
+            AllowsTransparency = false;
+            MainBorder.CornerRadius = new CornerRadius(0);
+            
+            // 在代码中动态添加 WindowChrome，仅针对 Win11
+            var chrome = new System.Windows.Shell.WindowChrome
+            {
+                GlassFrameThickness = new Thickness(-1),
+                CornerRadius = new CornerRadius(0),
+                CaptionHeight = 0
+            };
+            System.Windows.Shell.WindowChrome.SetWindowChrome(this, chrome);
+        }
+        else
+        {
+            // Windows 10 或更低版本：使用默认的 AllowsTransparency="True" 和 Border CornerRadius
+            // 无需做任何事，XAML 中已经默认配置好了
+        }
+        
         _settingsService = new SettingsService();
         _icsService = new IcsService();
         _sourceTimers = new Dictionary<string, System.Timers.Timer>();
@@ -417,6 +439,54 @@ public partial class MainWindow : Window
         return "Dark"; // Default to Dark
     }
 
+    [System.Runtime.InteropServices.DllImport("dwmapi.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode, PreserveSig = false)]
+    internal static extern void DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int pvAttribute, int cbAttribute);
+
+    public enum DWMWINDOWATTRIBUTE
+    {
+        DWMWA_WINDOW_CORNER_PREFERENCE = 33
+    }
+
+    public enum DWM_WINDOW_CORNER_PREFERENCE
+    {
+        DWMWCP_DEFAULT = 0,
+        DWMWCP_DONOTROUND = 1,
+        DWMWCP_ROUND = 2,
+        DWMWCP_ROUNDSMALL = 3
+    }
+
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+        
+        // 针对 Windows 11 (Build 22000+) 启用原生圆角
+        if (Environment.OSVersion.Version.Major >= 10 && Environment.OSVersion.Version.Build >= 22000)
+        {
+            EnableRoundedCorners();
+        }
+        else
+        {
+            // Windows 10: 确保模糊效果被正确应用
+            // 因为在构造函数中调用 ApplyTheme -> EnableBlur 时，Handle 可能还没准备好
+            var settings = _settingsService.GetSettings();
+            ApplyTheme(settings.Theme);
+        }
+    }
+
+    private void EnableRoundedCorners()
+    {
+        var windowHelper = new System.Windows.Interop.WindowInteropHelper(this);
+        var preference = (int)DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND;
+        try 
+        {
+            DwmSetWindowAttribute(windowHelper.Handle, (int)DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE, ref preference, sizeof(int));
+        }
+        catch 
+        {
+            // Windows 10 or older might not support this attribute or fail
+        }
+    }
+
     [System.Runtime.InteropServices.DllImport("user32.dll")]
     private static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
 
@@ -455,13 +525,37 @@ public partial class MainWindow : Window
     private void EnableBlur()
     {
         var windowHelper = new System.Windows.Interop.WindowInteropHelper(this);
-        var accent = new AccentPolicy
-        {
-            AccentState = AccentState.ACCENT_ENABLE_ACRYLICBLURBEHIND,
-            GradientColor = 0x00FFFFFF // 纯透明背景，让 WPF 背景色控制实际颜色
-        };
-
+        
+        // Windows 11 Acrylic (Requires different policy or native window chrome usually handles it)
+        // But for Windows 10, we use ACCENT_ENABLE_BLURBEHIND or ACCENT_ENABLE_ACRYLICBLURBEHIND
+        // If Win10 build 1709+, we can use Acrylic.
+        
+        var accent = new AccentPolicy();
         var accentStructSize = System.Runtime.InteropServices.Marshal.SizeOf(accent);
+        
+        // 区分 Win10 和 Win11 的处理
+        if (Environment.OSVersion.Version.Major >= 10 && Environment.OSVersion.Version.Build >= 22000)
+        {
+             // Win11: 使用 Acrylic，背景色设为全透明，由 DWM 处理模糊
+             accent.AccentState = AccentState.ACCENT_ENABLE_ACRYLICBLURBEHIND;
+             accent.GradientColor = 0x01FFFFFF; // 稍微不完全透明，有时能解决全黑问题
+             // 或者 0x00FFFFFF
+             accent.GradientColor = 0x00FFFFFF;
+        }
+        else
+        {
+            // Win10: 使用 BlurBehind 或 Acrylic
+            // 尝试使用 ACCENT_ENABLE_BLURBEHIND 兼容性更好，或者 Acrylic
+            // 如果之前用的是 Acrylic，这里保持一致
+            accent.AccentState = AccentState.ACCENT_ENABLE_ACRYLICBLURBEHIND;
+            // 关键：Windows 10 下 Acrylic 需要一个特定的 GradientColor 才能生效
+            // 格式 AABBGGRR (hex)
+            // 0xCC000000 (AA=CC, BB=00, GG=00, RR=00) -> 半透明黑色
+            // 但是 WPF Window Background 已经控制了颜色。
+            // 尝试设置 GradientColor 为 0 (全透明)
+            accent.GradientColor = 0x00FFFFFF; 
+        }
+
         var accentPtr = System.Runtime.InteropServices.Marshal.AllocHGlobal(accentStructSize);
         System.Runtime.InteropServices.Marshal.StructureToPtr(accent, accentPtr, false);
 
